@@ -1,0 +1,5 @@
+/phpmyadmin-apache/.docker/mysql/*
+!/phpmyadmin-apache/.docker/mysql/.gitkeep
+
+/phpmyadmin-fpm/.docker/mysql/*
+!/phpmyadmin-fpm/.docker/mysql/.gitkeep
