@@ -1,0 +1,9 @@
+STOP REPLICA;
+CHANGE REPLICATION SOURCE TO
+  SOURCE_HOST='mysql_master',        -- ใช้ชื่อ Service ของ Master ได้เลย
+  SOURCE_PORT=3306,
+  SOURCE_USER='repl',
+  SOURCE_PASSWORD='repl_password',
+  SOURCE_AUTO_POSITION=1,
+  GET_SOURCE_PUBLIC_KEY=1;
+START REPLICA;

@@ -1,0 +1,17 @@
+DROP USER IF EXISTS 'phpmyadmin'@'%';
+CREATE USER IF NOT EXISTS 'phpmyadmin'@'%' IDENTIFIED BY 'phpmyadmin';
+ALTER USER 'phpmyadmin'@'%' IDENTIFIED BY 'phpmyadmin';
+GRANT ALL PRIVILEGES ON *.* TO 'phpmyadmin'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+DROP USER IF EXISTS 'pma'@'%';
+CREATE USER IF NOT EXISTS 'pma'@'%' IDENTIFIED BY 'pma_password';
+ALTER USER 'pma'@'%' IDENTIFIED BY 'pma_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `phpmyadmin`.* TO 'pma'@'%';
+FLUSH PRIVILEGES;
+
+DROP USER IF EXISTS 'repl'@'%';
+CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY 'repl_password';
+ALTER USER 'repl'@'%' IDENTIFIED BY 'repl_password';
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repl'@'%';
+FLUSH PRIVILEGES;

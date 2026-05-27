@@ -1,0 +1,85 @@
+services:
+  mysql_master:
+    image: mysql:8.0
+    container_name: mysql_master
+    command:
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --server-id=10
+      - --log-bin=mysql-bin
+      - --gtid-mode=ON
+      - --enforce-gtid-consistency=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: "test"
+      MYSQL_USER: "test"
+      MYSQL_PASSWORD: "test"
+      TZ: Asia/Bangkok
+    volumes:
+      - mysql_data_master:/var/lib/mysql
+      - ./.docker/mysql/init_master:/docker-entrypoint-initdb.d  # mount init database
+    restart: unless-stopped
+
+  mysql_replica:
+    image: mysql:8.0
+    container_name: mysql_replica
+    command:
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --server-id=20
+      - --log-bin=mysql-bin
+      - --binlog_format=ROW
+      - --relay-log=mysql-relay-bin
+      - --read-only=ON
+      - --gtid-mode=ON
+      - --enforce-gtid-consistency=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: "test"
+      MYSQL_USER: "test"
+      MYSQL_PASSWORD: "test"
+      TZ: Asia/Bangkok
+    volumes:
+      - mysql_data_replica:/var/lib/mysql
+      - ./.docker/mysql/init_replica:/docker-entrypoint-initdb.d  # mount init database
+    depends_on:
+      - mysql_master
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.3-fpm-alpine
+    container_name: phpmyadmin
+    environment:
+      # PMA_HOST: mysql_replica
+      # PMA_PORT: 3306
+      PMA_DEFAULT_LANG: en
+      # PMA_ARBITRARY: 1
+      # Enable config storage (recommended for bookmarks, relations etc.)
+      PMA_CONTROLHOST: mysql_master
+      PMA_CONTROLPORT: 3306
+      PMA_CONTROLUSER: pma
+      PMA_CONTROLPASS: pma_password
+    volumes:
+      - ./.docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - shared_pma:/var/www/html
+    depends_on:
+      - mysql_master
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./.docker/nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - shared_pma:/var/www/phpmyadmin:ro
+    depends_on:
+      - phpmyadmin
+    restart: unless-stopped
+volumes:
+  mysql_data_master:
+  mysql_data_replica:
+  shared_pma:
