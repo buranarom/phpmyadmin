@@ -2,19 +2,36 @@ services:
   mysql:
     image: mysql:lts
     container_name: mysql
-    volumes:
-      - ./.docker/mysql:/var/lib/mysql
+    command:
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: "test"
+      MYSQL_USER: "test"
+      MYSQL_PASSWORD: "test"
+      TZ: Asia/Bangkok
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./.docker/mysql/init:/docker-entrypoint-initdb.d  # mount init database
     restart: unless-stopped
 
   phpmyadmin:
-    image: phpmyadmin:5.2.2-fpm-alpine
+    image: phpmyadmin:5.2.3-fpm-alpine
     container_name: phpmyadmin
     environment:
       PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_DEFAULT_LANG: en
+      # Enable config storage (recommended for bookmarks, relations etc.)
+      PMA_CONTROLHOST: mysql
+      PMA_CONTROLPORT: 3306
+      PMA_CONTROLUSER: pma
+      PMA_CONTROLPASS: pma_password
     volumes:
-      - shared-pma:/var/www/html
+      - ./.docker/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - shared_pma:/var/www/html
     depends_on:
       - mysql
     restart: unless-stopped
@@ -26,9 +43,10 @@ services:
       - "8080:80"
     volumes:
       - ./.docker/nginx/conf.d/:/etc/nginx/conf.d/:ro
-      - shared-pma:/var/www/phpmyadmin:ro
+      - shared_pma:/var/www/phpmyadmin:ro
     depends_on:
       - phpmyadmin
     #restart: unless-stopped
 volumes:
-  shared-pma:
+  mysql_data:
+  shared_pma:
