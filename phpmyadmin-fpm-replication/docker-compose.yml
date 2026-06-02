@@ -3,6 +3,7 @@ services:
     image: mysql:8.4
     container_name: mysql_master
     command:
+      - --skip-name-resolve
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -10,6 +11,8 @@ services:
       - --log-bin=mysql-bin
       - --gtid-mode=ON
       - --enforce-gtid-consistency=ON
+      # ต้องใส่ใน command ของ Slave 8.4 เพื่อให้รองรับรหัสผ่านจาก 5.7
+      - --mysql-native-password=ON
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: "test"
@@ -25,6 +28,7 @@ services:
     image: mysql:8.4
     container_name: mysql_replica
     command:
+      - --skip-name-resolve
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -42,6 +46,8 @@ services:
       - --replicate-ignore-db=phpmyadmin
       - --replicate-do-db=test
       - --report-host=mysql_slave_node1
+      # ต้องใส่ใน command ของ Slave 8.4 เพื่อให้รองรับรหัสผ่านจาก 5.7
+      #- --mysql-native-password=ON
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: "test"
