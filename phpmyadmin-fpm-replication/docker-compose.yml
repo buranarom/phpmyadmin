@@ -1,6 +1,6 @@
 services:
   mysql_master:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: mysql_master
     command:
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   mysql_replica:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: mysql_replica
     command:
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
@@ -35,6 +35,13 @@ services:
       - --read-only=ON
       - --gtid-mode=ON
       - --enforce-gtid-consistency=ON
+      - --replicate-ignore-db=mysql
+      - --replicate-ignore-db=information_schema
+      - --replicate-ignore-db=performance_schema
+      - --replicate-ignore-db=sys
+      - --replicate-ignore-db=phpmyadmin
+      - --replicate-do-db=test
+      - --report-host=mysql_slave_node1
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: "test"
